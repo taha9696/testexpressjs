@@ -1,55 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Search Ordinateur by Category</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordinateur List</title>
     <script src="/socket.io/socket.io.js"></script>
-</head>
-<body>
-    <h1>Search Ordinateur by Category</h1>
-    
-    <div>
-        Categorie: <input type="text" id="categoryInput" />
-        <button onClick="searchCat()">Search</button>
-    </div>
-    
-    <h2>Results:</h2>
-    <div id="results"></div>
-    
-    <script>
-    const socket = io();
-
-    function searchCat() {
-        const categoryInput = document.getElementById('categoryInput').value;
-
-        // Emit the "searchCategory" event with the input value
-        socket.emit('searchCategory', categoryInput);
-    }
-
-    // Listen for the "searchResults" event
-    socket.on('searchResults', (data) => {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = ''; // Clear previous results
-
-        if (data.length === 0) {
-            resultsDiv.innerHTML = '<p>No ordinateurs found for this category.</p>';
-            return;
+    <style>
+        /* General Reset and Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
         }
 
-        // Populate results
-        const list = document.createElement('ul');
-        data.forEach((ordinateur) => {
-            const item = document.createElement('li');
-            item.textContent = `Model: ${ordinateur.modele}, Category: ${ordinateur.categorie}, Price: ${ordinateur.prix}`;
-            list.appendChild(item);
+        /* Main container */
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Header */
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #444;
+        }
+
+        /* Input and button */
+        #category {
+            width: calc(100% - 100px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Results container */
+        #results {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        /* Individual result */
+        #results p {
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ordinateur List</h1>
+        
+        <!-- Input and Button -->
+        <div>
+            <input 
+                type="text" 
+                id="category" 
+                placeholder="Enter category (or leave empty)" 
+            />
+            <button onclick="displayOrdi(document.getElementById('category').value)">Search</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        var socket = io();
+
+        function displayOrdi(categorie = '') {
+            console.log(`Fetching data for category: ${categorie || 'all categories'}`);
+            socket.emit('display-ord', categorie);
+        }
+
+     
+        socket.on('ordList', (data) => {
+            console.log('Data received:', data);
+            const container = document.getElementById('results');
+            container.innerHTML = ''; 
+
+            for (var i = 0; i < data.length; i++) {
+                var p = document.createElement('p');
+                p.innerText = `${data[i].modele} : ${data[i].prix}`;
+                container.appendChild(p);
+            }
         });
-        resultsDiv.appendChild(list);
-    });
 
-    // Handle errors
-    socket.on('error', (error) => {
-        alert(error.message || 'An error occurred');
-    });
-</script>
-
+    </script>
 </body>
 </html>

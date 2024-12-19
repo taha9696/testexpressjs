@@ -1,23 +1,51 @@
 var Chat = require('./chatModel')
 var socketIo = require('socket.io')
+var ordinateurModel = require('../Ordinateur/ordinateurModel')
 
 function socketIO(server){
     const io = socketIo(server)
     io.on('connection',(socket)=>{
         console.log("user connected !");
         socket.broadcast.emit("msg","A new user is connected !")
-        socket.on('send-msg',async(data)=>{
-            console.log(data)
-            io.emit('msg',data.name+' : '+data.msg)
+        socket.on('msg', async (data)=>{
+            console.log(data);
+            io.emit('msg',data.name+ ': ' + data.msg)
             await new Chat({
                 msg: data.msg,
                 date: new Date()
             }).save()
+              .then((data, err)=>{
+                  if(err){
+                      console.log(err);
+                  }
+              })
         })
-        socket.on('displaymsg',async()=>{
-            var msgs = await Chat.find()
-            io.emit('msgList', msgs)
+
+        socket.on('display-msg', async ()=>{
+            
+            var msgs= await Chat.find()
+            console.log('wini data'+msgs);
+            io.emit('msgList',msgs)
+                      
         })
+        socket.on('display-ord', async (categorie) => {
+            try {
+                let ords;
+                if (categorie) {
+                    
+                    ords = await ordinateurModel.find({ categorie });
+                    console.log(`Data found for category "${categorie}":`, ords);
+                } else {
+                    
+                    ords = await ordinateurModel.find();
+                    console.log('All data:', ords);
+                }
+                io.emit('ordList', ords); 
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+                io.emit('error', { message: 'Failed to fetch data' }); 
+            }
+        });
     })
     return io;
 }

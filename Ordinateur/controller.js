@@ -7,5 +7,6 @@ router.post('/create', create)
 router.put('/update/:id', update)
 router.delete('/delete/:id', deleteU)
 router.get('/listByPrice',searchByPrice)
-router.get('/search',chat);
+router.get('/search',(req, res) => {
+    res.render('ordinateur'); });
 module.exports = router

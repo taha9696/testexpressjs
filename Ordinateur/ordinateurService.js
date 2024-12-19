@@ -1,3 +1,4 @@
+const ordinateurModel = require('./ordinateurModel');
 var Ordinateur = require('./ordinateurModel')
 const io = require('socket.io');
 async function list(req,res,next){
@@ -66,19 +67,36 @@ async function searchByPrice(req, res, next) {
         res.status(500).json({ error: 'Failed to fetch ordinateurs', details: err });
     }
 }
-function chat(req, res, next) {
-    res.render('ordinateur')
-}
-async function searchByCategory(category, socket) {
-    try {
-        const ordinateurs = await Ordinateur.find({ categorie: category });
-        socket.emit('searchResults', ordinateurs); // Emit results to the client
-    } catch (err) {
-        console.error('Error fetching ordinateurs:', err);
-        socket.emit('error', { message: 'Failed to fetch ordinateurs', details: err });
-    }
-}
+const socketIO = (server) => {
+    const io = socketIo(server);
+  
+
+    io.on('connection', (socket) => {
+        console.log('User connected via Socket.IO');
+
+        socket.on('display-ord', async (categorie) => {
+                    try {
+                        let ords;
+                        if (categorie) {
+                            ords = await ordinateurModel.find({ categorie });
+                            console.log(`Data found for category "${categorie}":`, ords);
+                        } else {
+                       
+                            ords = await ordinateurModel.find();
+                            console.log('All data:', ords);
+                        }
+                        io.emit('ordList', ords); 
+                    } catch (error) {
+                        console.error('Error fetching data:', error.message);
+                        io.emit('error', { message: 'Failed to fetch data' }); 
+                    }
+         });
+
+    });
+
+    return io;
+};
 
 
-module.exports = { create, list, update, deleteU ,searchByPrice,chat,searchByCategory}
+module.exports = { create, list, update, deleteU ,searchByPrice,socketIO}
 

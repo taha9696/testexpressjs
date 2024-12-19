@@ -19,7 +19,26 @@
     document.body.append(p)
 
    
-  })
+  })ùfunction displayOrdi(categorie = '') {
+    console.log(`Fetching data for category: ${categorie || 'all categories'}`);
+    socket.emit('display-ord', categorie); // Emit the category for filtering
+}
+
+socket.on('ordList', (data) => {
+    console.log('Data received:', data);
+    const container = document.getElementById('results');
+    container.innerHTML = ''; // Clear previous results
+    for (var i = 0; i < data.length; i++) {
+        var p = document.createElement('p');
+        p.innerText = `${data[i].modele} : ${data[i].prix}`;
+        container.appendChild(p);
+    }
+});
+
+// Handle errors
+socket.on('error', (error) => {
+    console.error('Error:', error.message);
+});
   socket.on('msgList',(data)=>{
     console.log(data)
     for(i=0; i<data.length;i++){
