@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Document</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Bonjour</h1>  
+   Message : <input type="text" id="chat" />
+   <button onClick="sendMSG()">Send</button>
+   <button onClick="displayMsg()">Display Msg</button>
+  <script>
+  var name = prompt('type your name!')
+  var socket = io();
+  socket.on('msg',(data)=>{
+    console.log(data)
+    var p = document.createElement('p')
+    p.innerText= data
+    document.body.append(p)
+
+   
+  })
+  socket.on('msgList',(data)=>{
+    console.log(data)
+    for(i=0; i<data.length;i++){
+    var p = document.createElement('p')
+    p.innerText= data[i].msg
+    document.body.append(p)
+    }
+  })
+  function sendMSG(){
+    var msg = document.getElementById('chat').value
+    console.log(msg)
+    var data = { name, msg}
+    console.log(data)
+    socket.emit('send-msg',data)
+
+  }
+  function displayMsg(){
+    socket.emit('displaymsg','Afficher les msgs')
+  }
+  </script>
+</body>
+</html>     
